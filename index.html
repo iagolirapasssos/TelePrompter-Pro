@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title data-i18n="title">TelePrompter Pro - Gravação Profissional de Vídeos</title>
+  <!-- Favicon integrado -->
+  <link rel="icon" href="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs>
+      <linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+        <stop offset='0%' style='stop-color:%23667eea;stop-opacity:1'/>
+        <stop offset='100%' style='stop-color:%23764ba2;stop-opacity:1'/>
+      </linearGradient>
+    </defs>
+    <rect width='100' height='100' rx='20' fill='url(%23grad)'/>
+    <circle cx='30' cy='35' r='4' fill='white' opacity='0.9'/>
+    <rect x='25' y='45' width='50' height='3' rx='1.5' fill='white' opacity='0.8'/>
+    <rect x='25' y='52' width='45' height='3' rx='1.5' fill='white' opacity='0.7'/>
+    <rect x='25' y='59' width='40' height='3' rx='1.5' fill='white' opacity='0.6'/>
+    <polygon points='70,25 85,35 70,45' fill='white' opacity='0.9'/>
+  </svg>" type="image/svg+xml">
+  <style>
+    :root {
+      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --primary-dark: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      --secondary: #f8fafc;
+      --accent: #3b82f6;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+      --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+      --shadow-lg: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,#f1f5f9,#e2e8f0);
+      color:var(--text);
+      padding:20px;
+      min-height:100vh;
+    }
+    .container {
+      max-width:800px; margin:0 auto; background:#fff;
+      border-radius:20px; box-shadow:var(--shadow-lg); overflow:hidden;
+    }
+    .header {
+      background:var(--primary); padding:40px 30px; text-align:center; position:relative;
+    }
+    .lang-select {
+      position:absolute; top:20px; right:20px;
+      padding:6px 10px; border:none; border-radius:8px;
+      background:rgba(255,255,255,0.8); font-size:0.9rem;
+      cursor:pointer;
+    }
+    .header h1 {
+      color:#fff; font-size:2.5rem; font-weight:700;
+    }
+    .header p {
+      color:rgba(255,255,255,0.9); font-size:1.1rem;
+    }
+    .content { padding:40px 30px; }
+    .form-group { margin-bottom:25px; }
+    .form-label { display:block; font-weight:600; margin-bottom:8px; }
+    .form-input {
+      width:100%; padding:15px; border:2px solid var(--border);
+      border-radius:12px; font-size:16px; background:var(--secondary);
+      transition:all .3s; font-family:inherit;
+    }
+    .form-input:focus {
+      outline:none; border-color:var(--accent); background:#fff;
+      box-shadow:0 0 0 3px rgba(59,130,246,0.1); transform:translateY(-1px);
+    }
+    .input-group, .button-group { display:grid; gap:15px; }
+    .input-group { grid-template-columns:1fr 1fr; }
+    .button-group {
+      grid-template-columns:1fr 1fr; margin-top:30px;
+    }
+    .btn {
+      padding:16px 24px; border:none; border-radius:12px;
+      font-size:16px; font-weight:600; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      gap:8px; position:relative; overflow:hidden;transition:all .3s;
+    }
+    .btn::before {
+      content:''; position:absolute; top:0; left:-100%;
+      width:100%; height:100%; background:rgba(255,255,255,0.2);
+      transition:left .5s;
+    }
+    .btn:hover::before { left:100%; }
+    .btn-primary {
+      background:var(--primary); color:#fff;
+    }
+    .btn-primary:hover {
+      background:var(--primary-dark); box-shadow:var(--shadow);
+      transform:translateY(-2px);
+    }
+    .btn-danger {
+      background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
+    }
+    .btn-success {
+      background:linear-gradient(135deg,#10b981,#059669);
+      color:#fff; grid-column:1/-1; margin-top:20px;
+    }
+    .download-section {
+      margin-top:30px; padding:20px;
+      background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:2px solid #bbf7d0; border-radius:12px;
+    }
+    #downloadLink { display:none; }
+    #preview {
+      position:fixed; bottom:10px; right:10px;
+      width:200px; height:auto; background:#000;
+      display:none; z-index:10001;
+    }
+    #teleprompterModal {
+      display:none; position:fixed; top:0; left:0;
+      width:100vw; height:100vh;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      color:#fff; font-size:42px; line-height:1.8;
+      overflow:hidden; padding:40px; z-index:9999;
+    }
+    #highlight {
+      position:absolute; top:50%; left:0; transform:translateY(-50%);
+      width:100%; height:1.8em; background:rgba(255,255,255,0.2);
+      pointer-events:none; z-index:5000;
+    }
+    #teleprompterContent {
+      height:100%; overflow-y:hidden; white-space:pre-wrap;
+      font-family:'Georgia',serif; font-weight:400; position:relative; z-index:4000;
+    }
+    #closeBtn {
+      position:absolute; top:30px; right:30px;
+      background:linear-gradient(135deg,#ef4444,#dc2626);
+      color:#fff; padding:15px 20px; font-size:18px;
+      border:none; border-radius:50px; cursor:pointer;
+      z-index:10000; transition:all .3s;
+    }
+    #closeBtn:hover { transform:scale(1.05); }
+    .status-indicator {
+      width:8px; height:8px; border-radius:50%;
+      margin-right:8px; animation:pulse 2s infinite;
+    }
+    .status-recording { background:var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+    .btn.loading { pointer-events:none; opacity:.7; }
+    .btn.loading::after {
+      content:''; position:absolute; width:16px; height:16px;
+      border:2px solid transparent; border-top-color:currentColor;
+      border-radius:50%; animation:spin 1s linear infinite;
+    }
+    @keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
+    @media(max-width:768px){
+      .input-group,.button-group{grid-template-columns:1fr;}
+      .lang-select{top:15px;right:15px;font-size:0.8rem;}
+      .header h1{font-size:2rem;}
+      #teleprompterModal{font-size:28px;padding:20px;}
+    }
+    @media(max-width:480px){
+      .lang-select{display:none;}
+      .header h1{font-size:1.8rem;}
+      #teleprompterModal{font-size:24px;padding:15px;}
+    }
+  </style>
+</head>
+<body>
+  <video id="preview" autoplay muted></video>
+  <div class="container">
+    <div class="header">
+      <select id="langSelect" class="lang-select">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+      </select>
+      <h1 data-i18n="headerTitle">📹 Teleprompter Pro</h1>
+      <p data-i18n="headerSubtitle">Grave seu vídeo com texto sincronizado profissionalmente</p>
+    </div>
+    <div class="content">
+      <div class="form-group">
+        <label class="form-label" data-i18n="labelScript">✨ Texto do seu script</label>
+        <textarea id="script" class="form-input" data-i18n-placeholder="placeholderScript" placeholder="Cole aqui o texto para o teleprompter..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="labelVideo">🖥️ Vídeo</label>
+        <select id="videoSource" class="form-input">
+          <option value="none" data-i18n="optNone">Nenhum</option>
+          <option value="webcam" data-i18n="optWebcam">Webcam</option>
+          <option value="screen" data-i18n="optScreen">Tela</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <div class="form-group">
+          <label class="form-label" data-i18n="labelDuration">⏱️ Duração (segundos)</label>
+          <input type="number" id="duration" class="form-input" value="60" min="10" max="600">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="labelMic">🎤 Microfone</label>
+          <select id="microphones" class="form-input"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="labelFormat">🎵 Formato</label>
+        <select id="format" class="form-input">
+          <option value="wav" data-i18n="optWav">WAV (Alta Qualidade)</option>
+          <option value="webm" data-i18n="optWebm">WEBM (Compacto)</option>
+        </select>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-primary" id="startBtn" data-i18n="btnStart">▶️ Iniciar Gravação</button>
+        <button class="btn btn-danger" id="stopBtn" data-i18n="btnStop">⏹️ Parar Tudo</button>
+      </div>
+      <div class="download-section">
+        <a id="downloadLink" class="btn btn-success" data-i18n="btnDownload">⬇️ Baixar Gravação</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="teleprompterModal">
+    <button id="closeBtn" onclick="stopEverything()" data-i18n="btnClose">✖️ Fechar</button>
+    <div id="highlight"></div>
+    <div id="teleprompterContent"></div>
+  </div>
+
+  <script>
+    const i18n = {
+      pt: {
+        title:'TelePrompter Pro - Gravação Profissional de Vídeos',
+        headerTitle:'📹 Teleprompter Pro',
+        headerSubtitle:'Grave seu vídeo com texto sincronizado profissionalmente',
+        labelScript:'✨ Texto do seu script',
+        placeholderScript:'Cole aqui o texto para o teleprompter...',
+        labelVideo:'🖥️ Vídeo',
+        optNone:'Nenhum', optWebcam:'Webcam', optScreen:'Tela',
+        labelDuration:'⏱️ Duração (segundos)',
+        labelMic:'🎤 Microfone',
+        labelFormat:'🎵 Formato',
+        optWav:'WAV (Alta Qualidade)', optWebm:'WEBM (Compacto)',
+        btnStart:'▶️ Iniciar Gravação', btnStop:'⏹️ Parar Tudo',
+        btnDownload:'⬇️ Baixar Gravação', btnClose:'✖️ Fechar',
+        alertNoScript:'Insira o texto do script.',
+        alertMic:'❌ Erro ao acessar o microfone. Verifique as permissões.',
+        detecting:'🔍 Detectando microfones...', noneDetected:'❌ Nenhum microfone detectado'
+      },
+      en: {
+        title:'TelePrompter Pro - Professional Video Recording',
+        headerTitle:'📹 Teleprompter Pro',
+        headerSubtitle:'Record your video with synchronized text professionally',
+        labelScript:'✨ Script Text',
+        placeholderScript:'Paste your teleprompter text here...',
+        labelVideo:'🖥️ Video',
+        optNone:'None', optWebcam:'Webcam', optScreen:'Screen',
+        labelDuration:'⏱️ Duration (seconds)',
+        labelMic:'🎤 Microphone',
+        labelFormat:'🎵 Format',
+        optWav:'WAV (High Quality)', optWebm:'WEBM (Compact)',
+        btnStart:'▶️ Start Recording', btnStop:'⏹️ Stop All',
+        btnDownload:'⬇️ Download Recording', btnClose:'✖️ Close',
+        alertNoScript:'Please enter the script text.',
+        alertMic:'❌ Error accessing microphone. Check permissions.',
+        detecting:'🔍 Detecting microphones...', noneDetected:'❌ No microphone detected'
+      }
+    };
+    let locale = 'pt';
+
+    function translatePage() {
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        el.textContent=i18n[locale][el.getAttribute('data-i18n')];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+        el.placeholder=i18n[locale][el.getAttribute('data-i18n-placeholder')];
+      });
+      document.title=i18n[locale].title;
+    }
+
+    document.getElementById('langSelect').addEventListener('change',e=>{
+      locale=e.target.value; translatePage();
+    });
+
+    let mediaRecorder, chunks=[], scrollAnimation;
+    let isRecording=false;
+
+    async function listMicrophones(){
+      const micSelect=document.getElementById("microphones");
+      micSelect.innerHTML=`<option>${i18n[locale].detecting}</option>`;
+      try{await navigator.mediaDevices.getUserMedia({audio:true});}catch{}
+      const devices=await navigator.mediaDevices.enumerateDevices();
+      const audioInputs=devices.filter(d=>d.kind==='audioinput'&&d.deviceId!=='communications');
+      micSelect.innerHTML='';
+      if(!audioInputs.length){
+        micSelect.innerHTML=`<option>${i18n[locale].noneDetected}</option>`;
+        return;
+      }
+      audioInputs.forEach((d,i)=>{
+        const opt=document.createElement("option");
+        opt.value=d.deviceId;
+        let lbl=d.label||`${locale==='pt'?'Microfone':'Microphone'} ${i+1}`;
+        lbl=lbl.toLowerCase().includes('usb')?`🔌 ${lbl}`
+           :lbl.toLowerCase().includes('bluetooth')?`📶 ${lbl}`:`🎙️ ${lbl}`;
+        opt.text=lbl; micSelect.appendChild(opt);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      translatePage(); listMicrophones();
+      document.getElementById('closeBtn').addEventListener('click',stopEverything);
+      document.getElementById('startBtn').addEventListener('click',startTeleprompter);
+      document.getElementById('stopBtn').addEventListener('click',stopEverything);
+    });
+
+    async function startTeleprompter(){
+      if(isRecording)return;
+      const text=document.getElementById("script").value.trim();
+      if(!text){alert(i18n[locale].alertNoScript);return;}
+      const durationMs=parseInt(document.getElementById("duration").value)*1000;
+      const micId=document.getElementById("microphones").value;
+      const format=document.getElementById("format").value;
+      const videoSrc=document.getElementById("videoSource").value;
+
+      const modal=document.getElementById("teleprompterModal");
+      const content=document.getElementById("teleprompterContent");
+      content.innerText=text; modal.style.display="block";
+
+      const totalScroll=content.scrollHeight-content.clientHeight;
+      isRecording=true; const startTime=performance.now();
+      function animate(now){
+        if(!isRecording)return;
+        const elapsed=now-startTime;
+        const progress=Math.min(elapsed/durationMs,1);
+        content.scrollTop=progress*totalScroll;
+        if(progress<1)scrollAnimation=requestAnimationFrame(animate);
+      }
+      scrollAnimation=requestAnimationFrame(animate);
+
+      // capta streams
+      let audioStream=await navigator.mediaDevices.getUserMedia({
+        audio:{
+          deviceId:micId?{exact:micId}:undefined,
+          sampleRate:48000,channelCount:1,
+          echoCancellation:true,noiseSuppression:true,autoGainControl:false
+        }
+      });
+      let combinedStream=audioStream;
+      if(videoSrc!=='none'){
+        let videoStream;
+        if(videoSrc==='webcam'){
+          videoStream=await navigator.mediaDevices.getUserMedia({video:true});
+        } else {
+          videoStream=await navigator.mediaDevices.getDisplayMedia({video:true});
+        }
+        combinedStream=new MediaStream([
+          ...videoStream.getVideoTracks(),
+          ...audioStream.getAudioTracks()
+        ]);
+        const preview=document.getElementById("preview");
+        preview.srcObject=combinedStream; preview.style.display='block';
+      }
+
+      // config MediaRecorder
+      const options=videoSrc==='none'
+        ?{mimeType:`audio/${format}`}
+        :{mimeType:'video/webm;codecs=vp9,opus'};
+      mediaRecorder=new MediaRecorder(combinedStream,options);
+      chunks=[]; mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+      mediaRecorder.onstop=()=>{
+        const blob=new Blob(chunks,{type:options.mimeType});
+        const url=URL.createObjectURL(blob);
+        const link=document.getElementById("downloadLink");
+        link.href=url;
+        link.download=`teleprompter-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.${videoSrc==='none'?format:'webm'}`;
+        link.style.display='flex';
+        combinedStream.getTracks().forEach(t=>t.stop());
+        if(videoSrc!=='none'){
+          document.getElementById("preview").style.display='none';
+        }
+      };
+      mediaRecorder.start(videoSrc==='none'?500:1000);
+    }
+
+    function stopEverything(){
+      isRecording=false; cancelAnimationFrame(scrollAnimation);
+      document.getElementById("teleprompterModal").style.display="none";
+      const preview=document.getElementById("preview");
+      if(preview.srcObject)preview.style.display='none';
+      if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop();
+    }
+
+    document.addEventListener('keydown',e=>{
+      if((e.code==='Escape'||e.code==='Space')&&
+        document.getElementById("teleprompterModal").style.display==="block"){
+        e.preventDefault(); stopEverything();
+      }
+    });
+  </script>
+</body>
+</html>
+
