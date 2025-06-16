@@ -33,5 +33,4 @@
 
 1. Clone este repositório  
    ```bash
-   git clone https://github.com/SEU_USUARIO/TelePrompter-Pro.git
-
+   git clone git@github.com:iagolirapasssos/TelePrompter-Pro.git
