@@ -109,10 +109,25 @@
     }
     #downloadLink { display:none; }
     #preview {
-      position:fixed; bottom:10px; right:10px;
-      width:200px; height:auto; background:#000;
-      display:none; z-index:10001;
-    }
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 200px;
+    height: auto;
+    background: #000;
+    display: none;
+    z-index: 10001;
+    cursor: move; /* Muda o cursor para indicar que é arrastável */
+    resize: both; /* Permite redimensionar */
+    overflow: hidden; /* Esconde o conteúdo que ultrapassa */
+    min-width: 150px;
+    min-height: 100px;
+    max-width: 400px;
+    max-height: 300px;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+  }
     #teleprompterModal {
       display:none; position:fixed; top:0; left:0;
       width:100vw; height:100vh;
@@ -291,6 +306,49 @@
     };
 
     let locale = 'pt';
+
+    // Variáveis para controle de arraste
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    // Função para inicializar o arraste da webcam
+    function initDragPreview() {
+      const preview = document.getElementById('preview');
+      
+      preview.addEventListener('mousedown', (e) => {
+        // Verifica se o clique foi no próprio vídeo (não nos controles)
+        if (e.target === preview) {
+          isDragging = true;
+          offsetX = e.clientX - preview.getBoundingClientRect().left;
+          offsetY = e.clientY - preview.getBoundingClientRect().top;
+          preview.style.opacity = '0.8'; // Feedback visual
+        }
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const preview = document.getElementById('preview');
+        preview.style.left = `${e.clientX - offsetX}px`;
+        preview.style.top = `${e.clientY - offsetY}px`;
+        preview.style.right = 'auto';
+        preview.style.bottom = 'auto';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        const preview = document.getElementById('preview');
+        preview.style.opacity = '1';
+      });
+
+      // Impede que eventos do mouse afetem o vídeo quando estiver arrastando
+      preview.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          preview.style.opacity = '1';
+          isDragging = false;
+        }
+      });
+    }
 
     // Carrega preferências salvas
     function loadPreferences() {
@@ -570,6 +628,9 @@
           const preview = document.getElementById("preview");
           preview.srcObject = combinedStream;
           preview.style.display = 'block';
+          
+          // Inicializa o arraste após mostrar o preview
+          initDragPreview();
         } catch(err) {
           console.error('Erro ao acessar vídeo:', err);
           stopEverything();
