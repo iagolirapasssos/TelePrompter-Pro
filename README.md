@@ -1,36 +1,102 @@
-# TelePrompter Pro
+Aqui está uma versão aprimorada do README.md para seu projeto TelePrompter Pro, com estrutura mais profissional e informações completas:
 
-**TelePrompter Pro** é uma aplicação front-end 100% em HTML/CSS/JavaScript que permite:
+```markdown
+# TelePrompter Pro 🎥📜
 
-- **Teleprompter**: exibição de texto rolante sincronizado à duração definida, com barra de destaque para ajudar o ritmo de leitura.
-- **Gravação de áudio**: captura de microfone com codecs Opus/WebM ou WAV de alta qualidade e bitrate configurável.
-- **Gravação de vídeo**: captura opcional de webcam ou gravação de tela (screen recording) juntamente com o áudio, em WebM.
-- **i18n**: interface multilíngue (Português ↔ Inglês) para todos os controles e mensagens.
-- **Seleção de microfone real**: enumera apenas dispositivos de entrada de áudio físicos.
-- **Download automático**: gera link para baixar o arquivo gravado (áudio ou vídeo).
-- **Interface responsiva**: funciona em desktop e mobile, sem dependências externas.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Pure Frontend](https://img.shields.io/badge/100%25-Frontend-brightgreen)](https://developer.mozilla.org/en-US/docs/Learn/Front-end_web_developer)
 
-## Funcionalidades
+Aplicação completa para gravação de vídeos profissionais com teleprompter integrado, 100% em HTML/CSS/JavaScript sem dependências externas.
 
-1. **Escolha de fonte de vídeo**  
-   - Nenhum (áudio apenas)  
-   - Webcam integrada  
-   - Gravação da tela (Screen Capture API)  
+![Demonstração do TelePrompter Pro](demo.gif) <!-- Adicione um gif de demonstração posteriormente -->
 
-2. **Configuração de duração**  
-   Defina o tempo total de leitura e gravação.
+## ✨ Funcionalidades Principais
 
-3. **Barra de ritmo**  
-   Destaque de linha para manter o fluxo de leitura.
+### 🎚️ Controle Total de Gravação
+- **Gravação de Áudio** com suporte a codecs Opus/WebM ou WAV
+- **Gravação de Vídeo** opcional (webcam ou tela) em WebM
+- **Sincronização perfeita** entre texto e gravação
 
-4. **Internacionalização**  
-   Botão para alternar entre Português e Inglês.
+### 📜 Teleprompter Avançado
+- **Rolagem automática** ajustada à duração definida
+- **Destaque de linha** para melhor ritmo de leitura
+- **Controles de teclado** (Espaço/Esc para pausar)
 
-5. **Download**  
-   Link dinâmico para salvar localmente o arquivo final.
+### 🌐 Internacionalização
+- Suporte nativo a **Português e Inglês**
+- Interface totalmente traduzível
 
-## Como usar
+### 🛠️ Outras Features
+- **Seleção inteligente** de dispositivos de áudio
+- **Download automático** dos arquivos gravados
+- **Responsivo** para desktop e mobile
+- **Tema escuro** no modo teleprompter
 
-1. Clone este repositório  
+## 🚀 Como Usar
+
+1. **Clone o repositório**
    ```bash
-   git clone git@github.com:iagolirapasssos/TelePrompter-Pro.git
+   git clone https://github.com/iagolirapasssos/TelePrompter-Pro.git
+   ```
+
+2. **Abra o arquivo `index.html`** no seu navegador
+
+3. **Configure sua gravação**:
+   - Cole seu texto no teleprompter
+   - Selecione fonte de vídeo (webcam/tela/nenhum)
+   - Ajuste a duração e formato
+
+4. **Inicie a gravação** e leia o texto que rola automaticamente
+
+5. **Baixe o resultado** ao finalizar
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Web APIs Modernas**:
+  - MediaRecorder API
+  - Screen Capture API
+  - MediaDevices API
+- **CSS puro** com variáveis e gradientes
+- **JavaScript Vanilla** ES6+
+- **i18n** implementado manualmente
+
+## 🌟 Recursos Especiais
+
+- **Janela de preview arrastável** - Mova a webcam para qualquer posição
+- **Persistência de configurações** - Lembra suas preferências
+- **Otimizado para performance** - Sem frameworks pesados
+
+## 📝 Roadmap
+
+- [ ] Adicionar mais idiomas
+- [ ] Implementar controle de velocidade de rolagem
+- [ ] Adicionar pré-visualização de câmera antes de gravar
+- [ ] Exportar legendas sincronizadas
+
+## 🤝 Como Contribuir
+
+1. Faça um fork do projeto
+2. Crie sua branch (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+Desenvolvido com ❤️ por [Iago Passos](https://github.com/iagolirapasssos)
+```
+
+### Melhorias incluídas:
+
+1. **Cabeçalho profissional** com badges
+2. **Seção de features** organizada em tópicos
+3. **Instruções de uso** mais claras
+4. **Tecnologias** destacadas
+5. **Recursos especiais** em evidência
+6. **Roadmap** para futuras melhorias
+7. **Seção de contribuição** padronizada
+8. **Licença** mencionada
