@@ -121,8 +121,8 @@
       overflow:hidden; padding:40px; z-index:9999;
     }
     #highlight {
-      position:absolute; top:50%; left:0; transform:translateY(-50%);
-      width:100%; height:1.8em; background:rgba(255,255,255,0.2);
+      position:absolute; top:30%; left:0; transform:translateY(-50%);
+      width:100%; height:2.8em; background:rgba(255,255,255,0.2);
       pointer-events:none; z-index:5000;
     }
     #teleprompterContent {
@@ -261,6 +261,89 @@
     };
     let locale = 'pt';
 
+    // Carrega preferências salvas
+    function loadPreferences() {
+      const savedLang = localStorage.getItem('teleprompterLang');
+      if (savedLang) {
+        locale = savedLang;
+        document.getElementById('langSelect').value = savedLang;
+      }
+      
+      const savedScript = localStorage.getItem('teleprompterScript');
+      if (savedScript) {
+        document.getElementById('script').value = savedScript;
+      }
+      
+      const savedDuration = localStorage.getItem('teleprompterDuration');
+      if (savedDuration) {
+        document.getElementById('duration').value = savedDuration;
+      }
+      
+      const savedVideoSource = localStorage.getItem('teleprompterVideoSource');
+      if (savedVideoSource) {
+        document.getElementById('videoSource').value = savedVideoSource;
+      }
+      
+      const savedFormat = localStorage.getItem('teleprompterFormat');
+      if (savedFormat) {
+        document.getElementById('format').value = savedFormat;
+      }
+      
+      const savedMic = localStorage.getItem('teleprompterMic');
+      if (savedMic) {
+        // O mic será definido após a detecção dos dispositivos
+      }
+    }
+
+    // Salva preferências
+    function savePreferences() {
+      localStorage.setItem('teleprompterLang', locale);
+      localStorage.setItem('teleprompterScript', document.getElementById('script').value);
+      localStorage.setItem('teleprompterDuration', document.getElementById('duration').value);
+      localStorage.setItem('teleprompterVideoSource', document.getElementById('videoSource').value);
+      localStorage.setItem('teleprompterFormat', document.getElementById('format').value);
+      localStorage.setItem('teleprompterMic', document.getElementById('microphones').value);
+    }
+
+    // Verifica permissões salvas
+    async function checkSavedPermissions() {
+      try {
+        // Verifica permissão de microfone
+        const micPermission = localStorage.getItem('teleprompterMicPermission');
+        if (micPermission === 'granted') {
+          // Tenta acessar dispositivos sem solicitar permissão novamente
+          await navigator.mediaDevices.getUserMedia({audio: true});
+        }
+        
+        // Verifica permissão de câmera
+        const webcamPermission = localStorage.getItem('teleprompterWebcamPermission');
+        if (webcamPermission === 'granted') {
+          // Tenta acessar dispositivos sem solicitar permissão novamente
+          await navigator.mediaDevices.getUserMedia({video: true});
+        }
+      } catch (error) {
+        console.log('Permissões revogadas ou alteradas:', error);
+        // Se houver erro, remove as permissões salvas
+        localStorage.removeItem('teleprompterMicPermission');
+        localStorage.removeItem('teleprompterWebcamPermission');
+      }
+    }
+    
+    // Função para verificar o estado atual das permissões
+    async function checkPermissionState(deviceType) {
+      try {
+        const permissionName = deviceType === 'audio' ? 'microphone' : 'camera';
+        const permissionStatus = await navigator.permissions.query({
+          name: permissionName
+        });
+        
+        return permissionStatus.state;
+      } catch (error) {
+        console.error(`Erro ao verificar permissão de ${deviceType}:`, error);
+        return 'prompt'; // Assume que precisa solicitar se não puder verificar
+      }
+    }
+
     function translatePage() {
       document.querySelectorAll('[data-i18n]').forEach(el=>{
         el.textContent=i18n[locale][el.getAttribute('data-i18n')];
@@ -272,124 +355,218 @@
     }
 
     document.getElementById('langSelect').addEventListener('change',e=>{
-      locale=e.target.value; translatePage();
+      locale=e.target.value; 
+      localStorage.setItem('teleprompterLang', locale);
+      translatePage();
     });
 
     let mediaRecorder, chunks=[], scrollAnimation;
     let isRecording=false;
 
-    async function listMicrophones(){
-      const micSelect=document.getElementById("microphones");
-      micSelect.innerHTML=`<option>${i18n[locale].detecting}</option>`;
-      try{await navigator.mediaDevices.getUserMedia({audio:true});}catch{}
-      const devices=await navigator.mediaDevices.enumerateDevices();
+    async function listMicrophones() {
+      const micSelect = document.getElementById("microphones");
+      micSelect.innerHTML = `<option>${i18n[locale].detecting}</option>`;
+      
+      try {
+        // Verifica o estado atual da permissão
+        const permissionState = await checkPermissionState('audio');
+        
+        if (permissionState === 'granted') {
+          // Se já tivermos permissão, apenas enumera os dispositivos
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          updateMicrophoneList(devices, micSelect);
+          localStorage.setItem('teleprompterMicPermission', 'granted');
+        } else {
+          // Se não tivermos permissão, solicita
+          const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+          stream.getTracks().forEach(track => track.stop()); // Libera o stream imediatamente
+          
+          // Atualiza a lista de dispositivos após conceder permissão
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          updateMicrophoneList(devices, micSelect);
+          
+          // Salva a permissão
+          localStorage.setItem('teleprompterMicPermission', 'granted');
+        }
+      } catch(err) {
+        console.error('Erro ao acessar microfones:', err);
+        micSelect.innerHTML = `<option>${i18n[locale].noneDetected}</option>`;
+        localStorage.removeItem('teleprompterMicPermission');
+      }
+    }
+
+    function updateMicrophoneList(devices, micSelect) {
       const audioInputs=devices.filter(d=>d.kind==='audioinput'&&d.deviceId!=='communications');
       micSelect.innerHTML='';
+      
       if(!audioInputs.length){
         micSelect.innerHTML=`<option>${i18n[locale].noneDetected}</option>`;
         return;
       }
+      
       audioInputs.forEach((d,i)=>{
         const opt=document.createElement("option");
         opt.value=d.deviceId;
         let lbl=d.label||`${locale==='pt'?'Microfone':'Microphone'} ${i+1}`;
         lbl=lbl.toLowerCase().includes('usb')?`🔌 ${lbl}`
            :lbl.toLowerCase().includes('bluetooth')?`📶 ${lbl}`:`🎙️ ${lbl}`;
-        opt.text=lbl; micSelect.appendChild(opt);
+        opt.text=lbl; 
+        micSelect.appendChild(opt);
       });
+      
+      // Restaura o microfone selecionado anteriormente, se disponível
+      const savedMic = localStorage.getItem('teleprompterMic');
+      if (savedMic && audioInputs.some(d => d.deviceId === savedMic)) {
+        micSelect.value = savedMic;
+      }
     }
 
-    document.addEventListener('DOMContentLoaded',()=>{
-      translatePage(); listMicrophones();
+
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadPreferences();
+      translatePage(); 
+
+      // Verifica permissões salvas ao carregar a página
+      await checkSavedPermissions();
+      
+      // Lista microfones
+      await listMicrophones();
+      
+      // Salva preferências quando os controles são alterados
+      document.getElementById('script').addEventListener('input', savePreferences);
+      document.getElementById('duration').addEventListener('change', savePreferences);
+      document.getElementById('videoSource').addEventListener('change', savePreferences);
+      document.getElementById('format').addEventListener('change', savePreferences);
+      document.getElementById('microphones').addEventListener('change', savePreferences);
+      
       document.getElementById('closeBtn').addEventListener('click',stopEverything);
       document.getElementById('startBtn').addEventListener('click',startTeleprompter);
       document.getElementById('stopBtn').addEventListener('click',stopEverything);
     });
 
-    async function startTeleprompter(){
-      if(isRecording)return;
-      const text=document.getElementById("script").value.trim();
-      if(!text){alert(i18n[locale].alertNoScript);return;}
-      const durationMs=parseInt(document.getElementById("duration").value)*1000;
-      const micId=document.getElementById("microphones").value;
-      const format=document.getElementById("format").value;
-      const videoSrc=document.getElementById("videoSource").value;
+    async function startTeleprompter() {
+      if (isRecording) return;
+      const text = document.getElementById("script").value.trim();
+      if (!text) { alert(i18n[locale].alertNoScript); return; }
+      
+      const durationMs = parseInt(document.getElementById("duration").value) * 1000;
+      const micId = document.getElementById("microphones").value;
+      const format = document.getElementById("format").value;
+      const videoSrc = document.getElementById("videoSource").value;
 
-      const modal=document.getElementById("teleprompterModal");
-      const content=document.getElementById("teleprompterContent");
-      content.innerText=text; modal.style.display="block";
+      // Configura o teleprompter
+      const modal = document.getElementById("teleprompterModal");
+      const content = document.getElementById("teleprompterContent");
+      content.innerText = text;
+      modal.style.display = "block";
 
-      const totalScroll=content.scrollHeight-content.clientHeight;
-      isRecording=true; const startTime=performance.now();
-      function animate(now){
-        if(!isRecording)return;
-        const elapsed=now-startTime;
-        const progress=Math.min(elapsed/durationMs,1);
-        content.scrollTop=progress*totalScroll;
-        if(progress<1)scrollAnimation=requestAnimationFrame(animate);
+      const totalScroll = content.scrollHeight - content.clientHeight;
+      isRecording = true;
+      const startTime = performance.now();
+      
+      function animate(now) {
+        if (!isRecording) return;
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        content.scrollTop = progress * totalScroll;
+        if (progress < 1) scrollAnimation = requestAnimationFrame(animate);
       }
-      scrollAnimation=requestAnimationFrame(animate);
+      scrollAnimation = requestAnimationFrame(animate);
 
-      // capta streams
-      let audioStream=await navigator.mediaDevices.getUserMedia({
-        audio:{
-          deviceId:micId?{exact:micId}:undefined,
-          sampleRate:48000,channelCount:1,
-          echoCancellation:true,noiseSuppression:true,autoGainControl:false
-        }
-      });
-      let combinedStream=audioStream;
-      if(videoSrc!=='none'){
+      // Captura streams de mídia
+      let audioStream;
+      try {
+        audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: micId ? { exact: micId } : undefined,
+            sampleRate: 48000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: false
+          }
+        });
+        // Salva a permissão concedida
+        localStorage.setItem('teleprompterMicPermission', 'granted');
+      } catch(err) {
+        console.error('Erro ao acessar microfone:', err);
+        alert(i18n[locale].alertMic);
+        stopEverything();
+        return;
+      }
+      
+      let combinedStream = audioStream;
+      if (videoSrc !== 'none') {
         let videoStream;
-        if(videoSrc==='webcam'){
-          videoStream=await navigator.mediaDevices.getUserMedia({video:true});
-        } else {
-          videoStream=await navigator.mediaDevices.getDisplayMedia({video:true});
+        try {
+          if (videoSrc === 'webcam') {
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Salva a permissão da webcam
+            localStorage.setItem('teleprompterWebcamPermission', 'granted');
+          } else {
+            videoStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            // Permissão de tela não pode ser armazenada
+          }
+          combinedStream = new MediaStream([
+            ...videoStream.getVideoTracks(),
+            ...audioStream.getAudioTracks()
+          ]);
+          const preview = document.getElementById("preview");
+          preview.srcObject = combinedStream;
+          preview.style.display = 'block';
+        } catch(err) {
+          console.error('Erro ao acessar vídeo:', err);
+          stopEverything();
+          return;
         }
-        combinedStream=new MediaStream([
-          ...videoStream.getVideoTracks(),
-          ...audioStream.getAudioTracks()
-        ]);
-        const preview=document.getElementById("preview");
-        preview.srcObject=combinedStream; preview.style.display='block';
       }
 
-      // config MediaRecorder
-      const options=videoSrc==='none'
-        ?{mimeType:`audio/${format}`}
-        :{mimeType:'video/webm;codecs=vp9,opus'};
-      mediaRecorder=new MediaRecorder(combinedStream,options);
-      chunks=[]; mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
-      mediaRecorder.onstop=()=>{
-        const blob=new Blob(chunks,{type:options.mimeType});
-        const url=URL.createObjectURL(blob);
-        const link=document.getElementById("downloadLink");
-        link.href=url;
-        link.download=`teleprompter-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.${videoSrc==='none'?format:'webm'}`;
-        link.style.display='flex';
-        combinedStream.getTracks().forEach(t=>t.stop());
-        if(videoSrc!=='none'){
-          document.getElementById("preview").style.display='none';
+      // Configura o MediaRecorder
+      const options = videoSrc === 'none'
+        ? { mimeType: `audio/${format}` }
+        : { mimeType: 'video/webm;codecs=vp9,opus' };
+      
+      mediaRecorder = new MediaRecorder(combinedStream, options);
+      chunks = [];
+      
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size) chunks.push(e.data);
+      };
+      
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: options.mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById("downloadLink");
+        link.href = url;
+        link.download = `teleprompter-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.${videoSrc === 'none' ? format : 'webm'}`;
+        link.style.display = 'flex';
+        
+        combinedStream.getTracks().forEach(t => t.stop());
+        if (videoSrc !== 'none') {
+          document.getElementById("preview").style.display = 'none';
         }
       };
-      mediaRecorder.start(videoSrc==='none'?500:1000);
+      
+      mediaRecorder.start(videoSrc === 'none' ? 500 : 1000);
     }
 
-    function stopEverything(){
-      isRecording=false; cancelAnimationFrame(scrollAnimation);
-      document.getElementById("teleprompterModal").style.display="none";
-      const preview=document.getElementById("preview");
-      if(preview.srcObject)preview.style.display='none';
-      if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop();
+    function stopEverything() {
+      isRecording = false;
+      cancelAnimationFrame(scrollAnimation);
+      document.getElementById("teleprompterModal").style.display = "none";
+      const preview = document.getElementById("preview");
+      if (preview.srcObject) preview.style.display = 'none';
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
     }
 
-    document.addEventListener('keydown',e=>{
-      if((e.code==='Escape'||e.code==='Space')&&
-        document.getElementById("teleprompterModal").style.display==="block"){
-        e.preventDefault(); stopEverything();
+    document.addEventListener('keydown', e => {
+      if ((e.code === 'Escape' || e.code === 'Space') &&
+        document.getElementById("teleprompterModal").style.display === "block") {
+        e.preventDefault();
+        stopEverything();
       }
     });
   </script>
 </body>
 </html>
-
