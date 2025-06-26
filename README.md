@@ -1,6 +1,3 @@
-Aqui está uma versão aprimorada do README.md para seu projeto TelePrompter Pro, com estrutura mais profissional e informações completas:
-
-```markdown
 # TelePrompter Pro 🎥📜
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -88,15 +85,3 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 ---
 
 Desenvolvido com ❤️ por [Iago Passos](https://github.com/iagolirapasssos)
-```
-
-### Melhorias incluídas:
-
-1. **Cabeçalho profissional** com badges
-2. **Seção de features** organizada em tópicos
-3. **Instruções de uso** mais claras
-4. **Tecnologias** destacadas
-5. **Recursos especiais** em evidência
-6. **Roadmap** para futuras melhorias
-7. **Seção de contribuição** padronizada
-8. **Licença** mencionada
