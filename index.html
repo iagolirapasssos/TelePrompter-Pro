@@ -161,6 +161,17 @@
       .header h1{font-size:1.8rem;}
       #teleprompterModal{font-size:24px;padding:15px;}
     }
+    /* Estilo para o select e suas opções */
+    .form-input, .form-input option {
+      color: var(--text); /* Usa a cor de texto padrão do tema */
+      background-color: var(--secondary); /* Usa o fundo secundário */
+    }
+
+    /* Estilo quando o select está em foco */
+    .form-input:focus, .form-input:focus option {
+      color: var(--text);
+      background-color: #fff; /* Fundo branco quando selecionado */
+    }
   </style>
 </head>
 <body>
@@ -199,9 +210,12 @@
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="labelFormat">🎵 Formato</label>
+        <!-- Mantenha todo o HTML anterior, apenas modifique o select de formatos para: -->
         <select id="format" class="form-input">
-          <option value="wav" data-i18n="optWav">WAV (Alta Qualidade)</option>
-          <option value="webm" data-i18n="optWebm">WEBM (Compacto)</option>
+          <option value="auto" data-i18n="optAuto">Automático (Melhor Qualidade)</option>
+          <option value="webm" data-i18n="optWebm">WEBM (Recomendado)</option>
+          <option value="mp4" data-i18n="optMp4">MP4 (Compatível)</option>
+          <option value="ogg" data-i18n="optOgg">OGG (Compacto)</option>
         </select>
       </div>
       <div class="button-group">
@@ -221,44 +235,61 @@
   </div>
 
   <script>
-    const i18n = {
+   const i18n = {
       pt: {
-        title:'TelePrompter Pro - Gravação Profissional de Vídeos',
-        headerTitle:'📹 Teleprompter Pro',
-        headerSubtitle:'Grave seu vídeo com texto sincronizado profissionalmente',
-        labelScript:'✨ Texto do seu script',
+        title:           'TelePrompter Pro - Gravação Profissional de Vídeos',
+        headerTitle:     '📹 Teleprompter Pro',
+        headerSubtitle:  'Grave seu vídeo com texto sincronizado profissionalmente',
+        labelScript:     '✨ Texto do seu script',
         placeholderScript:'Cole aqui o texto para o teleprompter...',
-        labelVideo:'🖥️ Vídeo',
-        optNone:'Nenhum', optWebcam:'Webcam', optScreen:'Tela',
-        labelDuration:'⏱️ Duração (segundos)',
-        labelMic:'🎤 Microfone',
-        labelFormat:'🎵 Formato',
-        optWav:'WAV (Alta Qualidade)', optWebm:'WEBM (Compacto)',
-        btnStart:'▶️ Iniciar Gravação', btnStop:'⏹️ Parar Tudo',
-        btnDownload:'⬇️ Baixar Gravação', btnClose:'✖️ Fechar',
-        alertNoScript:'Insira o texto do script.',
-        alertMic:'❌ Erro ao acessar o microfone. Verifique as permissões.',
-        detecting:'🔍 Detectando microfones...', noneDetected:'❌ Nenhum microfone detectado'
+        labelVideo:      '🖥️ Vídeo',
+        optNone:         'Nenhum',
+        optWebcam:       'Webcam',
+        optScreen:       'Tela',
+        labelDuration:   '⏱️ Duração (segundos)',
+        labelMic:        '🎤 Microfone',
+        labelFormat:     '🎵 Formato',
+        optAuto:         'Automático (Melhor Qualidade)',
+        optWebm:         'WEBM (Recomendado)',
+        optMp4:          'MP4 (Compatível)',
+        optOgg:          'OGG (Compacto)',
+        btnStart:        '▶️ Iniciar Gravação',
+        btnStop:         '⏹️ Parar Tudo',
+        btnDownload:     '⬇️ Baixar Gravação',
+        btnClose:        '✖️ Fechar',
+        alertNoScript:   'Insira o texto do script.',
+        alertMic:        '❌ Erro ao acessar o microfone. Verifique as permissões.',
+        detecting:       '🔍 Detectando microfones...',
+        noneDetected:    '❌ Nenhum microfone detectado'
       },
       en: {
-        title:'TelePrompter Pro - Professional Video Recording',
-        headerTitle:'📹 Teleprompter Pro',
-        headerSubtitle:'Record your video with synchronized text professionally',
-        labelScript:'✨ Script Text',
+        title:           'TelePrompter Pro - Professional Video Recording',
+        headerTitle:     '📹 Teleprompter Pro',
+        headerSubtitle:  'Record your video with synchronized text professionally',
+        labelScript:     '✨ Script Text',
         placeholderScript:'Paste your teleprompter text here...',
-        labelVideo:'🖥️ Video',
-        optNone:'None', optWebcam:'Webcam', optScreen:'Screen',
-        labelDuration:'⏱️ Duration (seconds)',
-        labelMic:'🎤 Microphone',
-        labelFormat:'🎵 Format',
-        optWav:'WAV (High Quality)', optWebm:'WEBM (Compact)',
-        btnStart:'▶️ Start Recording', btnStop:'⏹️ Stop All',
-        btnDownload:'⬇️ Download Recording', btnClose:'✖️ Close',
-        alertNoScript:'Please enter the script text.',
-        alertMic:'❌ Error accessing microphone. Check permissions.',
-        detecting:'🔍 Detecting microphones...', noneDetected:'❌ No microphone detected'
+        labelVideo:      '🖥️ Video',
+        optNone:         'None',
+        optWebcam:       'Webcam',
+        optScreen:       'Screen',
+        labelDuration:   '⏱️ Duration (seconds)',
+        labelMic:        '🎤 Microphone',
+        labelFormat:     '🎵 Format',
+        optAuto:         'Automatic (Best Quality)',
+        optWebm:         'WEBM (Recommended)',
+        optMp4:          'MP4 (Compatible)',
+        optOgg:          'OGG (Compact)',
+        btnStart:        '▶️ Start Recording',
+        btnStop:         '⏹️ Stop All',
+        btnDownload:     '⬇️ Download Recording',
+        btnClose:        '✖️ Close',
+        alertNoScript:   'Please enter the script text.',
+        alertMic:        '❌ Error accessing microphone. Check permissions.',
+        detecting:       '🔍 Detecting microphones...',
+        noneDetected:    '❌ No microphone detected'
       }
     };
+
     let locale = 'pt';
 
     // Carrega preferências salvas
@@ -328,7 +359,7 @@
         localStorage.removeItem('teleprompterWebcamPermission');
       }
     }
-    
+
     // Função para verificar o estado atual das permissões
     async function checkPermissionState(deviceType) {
       try {
@@ -345,13 +376,13 @@
     }
 
     function translatePage() {
-      document.querySelectorAll('[data-i18n]').forEach(el=>{
-        el.textContent=i18n[locale][el.getAttribute('data-i18n')];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = i18n[locale][el.getAttribute('data-i18n')];
       });
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
-        el.placeholder=i18n[locale][el.getAttribute('data-i18n-placeholder')];
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = i18n[locale][el.getAttribute('data-i18n-placeholder')];
       });
-      document.title=i18n[locale].title;
+      document.title = i18n[locale].title;
     }
 
     document.getElementById('langSelect').addEventListener('change',e=>{
@@ -445,8 +476,37 @@
       document.getElementById('stopBtn').addEventListener('click',stopEverything);
     });
 
+    // Adicione esta função para verificar formatos suportados
+    function getSupportedMimeTypes() {
+      const possibleTypes = [
+        // Vídeo
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=h264,opus',
+        'video/mp4;codecs=h264,aac',
+        'video/mp4;codecs=h264,opus',
+        // Áudio
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+        'audio/mpeg'
+      ];
+      
+      return possibleTypes.filter(type => {
+        return MediaRecorder.isTypeSupported(type);
+      });
+    }
+
+    // Modifique a função startTeleprompter
     async function startTeleprompter() {
       if (isRecording) return;
+      
+      const supportedTypes = getSupportedMimeTypes();
+      if (supportedTypes.length === 0) {
+        alert('Seu navegador não suporta nenhum formato de gravação compatível');
+        return;
+      }
+
       const text = document.getElementById("script").value.trim();
       if (!text) { alert(i18n[locale].alertNoScript); return; }
       
@@ -455,7 +515,7 @@
       const format = document.getElementById("format").value;
       const videoSrc = document.getElementById("videoSource").value;
 
-      // Configura o teleprompter
+      // Configuração do teleprompter (mantida igual)
       const modal = document.getElementById("teleprompterModal");
       const content = document.getElementById("teleprompterContent");
       content.innerText = text;
@@ -474,7 +534,7 @@
       }
       scrollAnimation = requestAnimationFrame(animate);
 
-      // Captura streams de mídia
+      // Captura streams de mídia (mantida igual)
       let audioStream;
       try {
         audioStream = await navigator.mediaDevices.getUserMedia({
@@ -487,8 +547,6 @@
             autoGainControl: false
           }
         });
-        // Salva a permissão concedida
-        localStorage.setItem('teleprompterMicPermission', 'granted');
       } catch(err) {
         console.error('Erro ao acessar microfone:', err);
         alert(i18n[locale].alertMic);
@@ -502,11 +560,8 @@
         try {
           if (videoSrc === 'webcam') {
             videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            // Salva a permissão da webcam
-            localStorage.setItem('teleprompterWebcamPermission', 'granted');
           } else {
             videoStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            // Permissão de tela não pode ser armazenada
           }
           combinedStream = new MediaStream([
             ...videoStream.getVideoTracks(),
@@ -522,33 +577,70 @@
         }
       }
 
-      // Configura o MediaRecorder
-      const options = videoSrc === 'none'
-        ? { mimeType: `audio/${format}` }
-        : { mimeType: 'video/webm;codecs=vp9,opus' };
-      
-      mediaRecorder = new MediaRecorder(combinedStream, options);
-      chunks = [];
-      
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size) chunks.push(e.data);
-      };
-      
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: options.mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.getElementById("downloadLink");
-        link.href = url;
-        link.download = `teleprompter-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.${videoSrc === 'none' ? format : 'webm'}`;
-        link.style.display = 'flex';
-        
-        combinedStream.getTracks().forEach(t => t.stop());
-        if (videoSrc !== 'none') {
-          document.getElementById("preview").style.display = 'none';
+      // Configuração inteligente do MediaRecorder
+      let options;
+      if (format === 'auto') {
+        // Seleciona automaticamente o melhor formato suportado
+        if (videoSrc === 'none') {
+          options = {
+            mimeType: supportedTypes.find(t => t.startsWith('audio/')) || 'audio/webm'
+          };
+        } else {
+          options = {
+            mimeType: supportedTypes.find(t => t.startsWith('video/')) || 'video/webm'
+          };
         }
-      };
-      
-      mediaRecorder.start(videoSrc === 'none' ? 500 : 1000);
+      } else {
+        // Usa o formato selecionado pelo usuário (se suportado)
+        const selectedType = videoSrc === 'none' 
+          ? `audio/${format}`
+          : `video/${format}`;
+        
+        const isSupported = supportedTypes.some(t => t.includes(selectedType));
+        
+        if (!isSupported) {
+          alert(`Formato ${selectedType} não suportado. Usando formato alternativo.`);
+          options = { mimeType: supportedTypes[0] };
+        } else {
+          options = { mimeType: selectedType };
+        }
+      }
+
+      try {
+        mediaRecorder = new MediaRecorder(combinedStream, options);
+        chunks = [];
+        
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size) chunks.push(e.data);
+        };
+        
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: options.mimeType });
+          const url = URL.createObjectURL(blob);
+          const link = document.getElementById("downloadLink");
+          link.href = url;
+          
+          // Determina a extensão do arquivo baseado no tipo MIME
+          let extension = 'webm';
+          if (options.mimeType.includes('mp4')) extension = 'mp4';
+          if (options.mimeType.includes('ogg')) extension = 'ogg';
+          if (options.mimeType.includes('mpeg')) extension = 'mp3';
+          
+          link.download = `teleprompter-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.${extension}`;
+          link.style.display = 'flex';
+          
+          combinedStream.getTracks().forEach(t => t.stop());
+          if (videoSrc !== 'none') {
+            document.getElementById("preview").style.display = 'none';
+          }
+        };
+        
+        mediaRecorder.start(videoSrc === 'none' ? 500 : 1000);
+      } catch (error) {
+        console.error('Erro ao iniciar MediaRecorder:', error);
+        alert('Erro ao iniciar gravação. Tente outro formato.');
+        stopEverything();
+      }
     }
 
     function stopEverything() {
